@@ -41,6 +41,24 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
 
+  const signOut = async () => {
+    // Best-effort: clear client-side cached auth state before server sign-out
+    try {
+      Object.keys(localStorage).forEach((k) => {
+        if (k.startsWith('sb-') || k === 'supabase.auth.token') {
+          localStorage.removeItem(k)
+        }
+      })
+      sessionStorage.clear()
+    } catch {}
+    // Submit a POST form so the server route can clear cookies and redirect
+    const form = document.createElement('form')
+    form.method = 'POST'
+    form.action = '/auth/sign-out'
+    document.body.appendChild(form)
+    form.submit()
+  }
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -102,7 +120,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={signOut}>
               <LogOut />
               Log out
             </DropdownMenuItem>

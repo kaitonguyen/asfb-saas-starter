@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/component
 import { ProfileForm } from '@/components/account/profile-form'
 import { getOrgConfig } from '@/lib/org-config'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/components/ui/card'
+import { SubscriptionSummary } from '@/components/account/subscription-summary'
 
 export default function AccountPage() {
   const org = getOrgConfig()
@@ -43,8 +44,8 @@ export default function AccountPage() {
               <CardTitle>Subscription</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">Connect your billing provider to manage your plan and invoices.</p>
-              <div className="mt-2 text-sm">Coming soon…</div>
+              <p className="text-sm text-muted-foreground mb-3">Your organizations and their current plan/status.</p>
+              <SubscriptionSummary />
             </CardContent>
           </Card>
         </TabsContent>

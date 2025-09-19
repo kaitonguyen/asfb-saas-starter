@@ -54,3 +54,60 @@ begin
   return json_build_object('id', v_org.id, 'name', v_org.name, 'slug', v_org.slug);
 end;
 $$;
+
+-- Subscriptions: org-level billing information
+create table if not exists public.subscriptions (
+  org_id uuid primary key references public.organizations(id) on delete cascade,
+  plan text not null default 'free',
+  status text not null default 'inactive', -- inactive | active | trialing | past_due | canceled
+  provider text default 'stripe', -- billing provider identifier (optional)
+  price_id text, -- provider price id
+  customer_id text, -- provider customer id
+  subscription_id text, -- provider subscription id
+  current_period_end timestamptz,
+  cancel_at_period_end boolean default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- RLS for subscriptions
+alter table public.subscriptions enable row level security;
+
+-- Anyone in the org can read subscription
+create policy if not exists subscriptions_select on public.subscriptions
+  for select using (
+    exists(
+      select 1 from public.memberships m
+      where m.org_id = subscriptions.org_id and m.user_id = auth.uid()
+    )
+  );
+
+-- Only org owner can insert/update/delete subscription rows
+create policy if not exists subscriptions_insert on public.subscriptions
+  for insert to authenticated with check (
+    exists(
+      select 1 from public.memberships m
+      where m.org_id = subscriptions.org_id and m.user_id = auth.uid() and m.role = 'owner'
+    )
+  );
+
+create policy if not exists subscriptions_update on public.subscriptions
+  for update to authenticated using (
+    exists(
+      select 1 from public.memberships m
+      where m.org_id = subscriptions.org_id and m.user_id = auth.uid() and m.role = 'owner'
+    )
+  ) with check (
+    exists(
+      select 1 from public.memberships m
+      where m.org_id = subscriptions.org_id and m.user_id = auth.uid() and m.role = 'owner'
+    )
+  );
+
+create policy if not exists subscriptions_delete on public.subscriptions
+  for delete to authenticated using (
+    exists(
+      select 1 from public.memberships m
+      where m.org_id = subscriptions.org_id and m.user_id = auth.uid() and m.role = 'owner'
+    )
+  );

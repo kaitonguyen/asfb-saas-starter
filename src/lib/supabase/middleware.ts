@@ -39,22 +39,32 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth') &&
-    !request.nextUrl.pathname.startsWith('/error')
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
+  const pathname = request.nextUrl.pathname
+  const isAuthRoute = pathname.startsWith('/auth')
+  const isSignOut = pathname.startsWith('/auth/sign-out')
+  const isAuthCallback = pathname.startsWith('/auth/callback')
+
+  // Helper to preserve Supabase cookies when redirecting
+  const redirectWithCookies = (url: URL) => {
+    const res = NextResponse.redirect(url)
+    supabaseResponse.cookies.getAll().forEach(({ name, value, options }) => {
+      res.cookies.set(name, value, options)
+    })
+    return res
   }
 
-  if(user && request.nextUrl.pathname.startsWith('/auth')) {
+  // Redirect unauthenticated users to /auth/sign-in (allow /auth and /error)
+  if (!user && !isAuthRoute && !pathname.startsWith('/error')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/'
-    return NextResponse.redirect(url)
+    url.pathname = '/auth/sign-in'
+    return redirectWithCookies(url)
+  }
+
+  // If signed-in and hitting auth pages (except sign-out and callback), send to dashboard
+  if (user && isAuthRoute && !isSignOut && !isAuthCallback) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return redirectWithCookies(url)
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.

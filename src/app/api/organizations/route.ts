@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 
 export async function GET() {
-  const supabase = createSupabaseServerClient()
+  const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -10,16 +10,24 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from('organizations')
-    .select('id, slug, name, memberships!inner(user_id)')
+    .select('id, slug, name, memberships!inner(user_id, role)')
     .eq('memberships.user_id', user.id)
     .order('name')
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ organizations: (data as any[])?.map((o: any) => ({ id: o.id, slug: o.slug, name: o.name })) ?? [] })
+  return NextResponse.json({
+    organizations:
+      (data as any[])?.map((o: any) => ({
+        id: o.id,
+        slug: o.slug,
+        name: o.name,
+        role: Array.isArray(o.memberships) && o.memberships[0]?.role ? o.memberships[0].role : undefined,
+      })) ?? [],
+  })
 }
 
 export async function POST(request: Request) {
-  const supabase = createSupabaseServerClient()
+  const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
