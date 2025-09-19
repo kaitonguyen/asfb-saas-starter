@@ -1,59 +1,55 @@
-import 'server-only'
-import Link from 'next/link'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { AppSidebar } from '@/components/components/app-sidebar'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/components/ui/breadcrumb'
+import { Separator } from '@/components/components/ui/separator'
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/components/ui/sidebar'
 
-async function getOrganizations() {
-  const supabase = createSupabaseServerClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return [] as { id: string; name: string; slug: string }[]
-  const { data } = await supabase
-    .from('organizations')
-    .select('id, name, slug, memberships!inner(user_id)')
-    .eq('memberships.user_id', user.id)
-    .order('name')
-  return (data ?? []).map((o: any) => ({ id: o.id, name: o.name, slug: o.slug }))
-}
-
-export default async function OrganizationsPage() {
-  const orgs = await getOrganizations()
+export default function Page() {
   return (
-    <main className="container py-10">
-      <h1 className="text-2xl font-semibold">Organizations</h1>
-      <ul className="mt-4 space-y-2">
-        {orgs.length === 0 && <li className="text-sm text-muted-foreground">No organizations yet.</li>}
-        {orgs.map((o: { id: string; name: string; slug: string }) => (
-          <li key={o.id}>
-            <Link href={`/o/${o.slug}/dashboard`} className="underline">
-              {o.name}
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <CreateOrganizationForm />
-    </main>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator
+              orientation="vertical"
+              className="mr-2 data-[orientation=vertical]:h-4"
+            />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink href="#">
+                    Building Your Application
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        </header>
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+            <div className="aspect-video rounded-xl bg-muted/50" />
+            <div className="aspect-video rounded-xl bg-muted/50" />
+            <div className="aspect-video rounded-xl bg-muted/50" />
+          </div>
+          <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   )
-}
-
-function CreateOrganizationForm() {
-  return (
-    <form className="mt-8 grid max-w-md gap-3" action={createOrg}>
-      <input className="border p-2" name="name" placeholder="Organization name" required />
-      <input className="border p-2" name="slug" placeholder="org-slug" pattern="[a-z0-9-]+" required />
-      <button className="border px-3 py-2" type="submit">Create</button>
-    </form>
-  )
-}
-
-async function createOrg(formData: FormData) {
-  'use server'
-  const name = String(formData.get('name') || '')
-  const slug = String(formData.get('slug') || '')
-  if (!name || !slug) return
-  await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/organizations`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ name, slug }),
-  })
 }

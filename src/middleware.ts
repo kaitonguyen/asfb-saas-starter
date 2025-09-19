@@ -1,9 +1,11 @@
+import { createServerClient } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
+import { updateSession } from './lib/supabase/middleware'
 
 // Basic multi-tenant routing support:
 // - If subdomain like org.example.com -> rewrite to /o/org
 // - Path based: /o/[slug]/... is allowed as-is
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const url = req.nextUrl
   const host = req.headers.get('host') || ''
 
@@ -23,7 +25,7 @@ export function middleware(req: NextRequest) {
     }
   }
 
-  return NextResponse.next()
+  return await updateSession(req)
 }
 
 export const config = {

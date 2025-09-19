@@ -25,10 +25,14 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/components/ui/sidebar"
-import { createClient } from "@/lib/supabase/component"
 
 // This is sample data.
 const data = {
+  user: {
+    name: "shadcn",
+    email: "m@example.com",
+    avatar: "/avatars/shadcn.jpg",
+  },
   teams: [
     {
       name: "Acme Inc",
@@ -153,20 +157,6 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const supabase = createClient()
-  const [user, setUser] = React.useState<any>(null)
-
-  React.useEffect(() => {
-    async function fetchUser() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      setUser(user)
-    }
-    fetchUser()
-  }, [supabase])
-
-  if (!user) return null
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -177,7 +167,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser user={data.user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
