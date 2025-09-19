@@ -1,0 +1,43 @@
+# Node / Next.js
+node_modules/
+.next/
+out/
+.vercel/
+.next/cache/
+
+# Env
+.env*
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/*
+!.vscode/extensions.json
+
+# Testing
+coverage/
+
+# TypeScript
+*.tsbuildinfo
+
+# Build artifacts
+*.local
+
+# Supabase
+supabase/.branches
+supabase/.temp
+supabase/.cache
+
+# Misc
+*.orig
+*.patch
