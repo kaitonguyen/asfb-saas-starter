@@ -54,7 +54,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Redirect unauthenticated users to /auth/sign-in (allow /auth and /error)
-  if (!user && !isAuthRoute && !pathname.startsWith('/error')) {
+  if (!user && !isAuthRoute && !pathname.startsWith('/error') && pathname !== "/") {
     const url = request.nextUrl.clone()
     url.pathname = '/auth/sign-in'
     return redirectWithCookies(url)
