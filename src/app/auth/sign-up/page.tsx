@@ -30,7 +30,7 @@ export default function SignUpPage() {
         options: { emailRedirectTo: `${origin}/auth/callback` },
       })
       if (error) setError(error.message)
-      else setMessage('Sign up successful. Check your email to confirm.')
+      else setMessage('Đăng ký thành công. Kiểm tra email của bạn để xác nhận.')
     } finally {
       setLoading(false)
     }
@@ -41,8 +41,8 @@ export default function SignUpPage() {
       <div className="w-full max-w-sm">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Create an account</CardTitle>
-            <CardDescription>Enter your email and password to sign up</CardDescription>
+            <CardTitle className="text-2xl">Tạo tài khoản</CardTitle>
+            <CardDescription>Nhập email và mật khẩu của bạn để đăng ký</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={onSubmit} className="grid gap-4">
@@ -51,16 +51,16 @@ export default function SignUpPage() {
                 <Input id="email" type="email" placeholder="you@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" placeholder="Password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                <Label htmlFor="password">Mật khẩu</Label>
+                <Input id="password" type="password" placeholder="Mật khẩu" required value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               {message && <p className="text-sm text-green-600">{message}</p>}
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Creating...' : 'Sign up'}
+                {loading ? 'Đang tạo...' : 'Đăng ký'}
               </Button>
               <p className="text-center text-sm text-muted-foreground">
-                Already have an account? <Link className="underline underline-offset-4" href="/auth/sign-in">Sign in</Link>
+                Bạn đã có tài khoản? <Link className="underline underline-offset-4" href="/auth/sign-in">Đăng nhập</Link>
               </p>
             </form>
           </CardContent>
