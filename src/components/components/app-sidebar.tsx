@@ -6,6 +6,7 @@ import {
   BookOpen,
   Bot,
   Command,
+  CreditCard,
   Frame,
   GalleryVerticalEnd,
   Map,
@@ -14,7 +15,6 @@ import {
   SquareTerminal,
 } from "lucide-react"
 
-import { NavMain } from "@/components/components/nav-main"
 import { NavProjects } from "@/components/components/nav-projects"
 import { NavUser } from "@/components/components/nav-user"
 import { TeamSwitcher } from "@/components/components/team-switcher"
@@ -150,6 +150,13 @@ const data = {
       icon: Map,
     },
   ],
+  accounts: [
+    {
+      name: "Thanh toán",
+      url: "#",
+      icon: CreditCard,
+    },
+  ]
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -165,6 +172,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
     fetchUser()
   }, [supabase])
+  console.log(user)
 
   if (!user) return null
   return (
@@ -173,8 +181,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        {/* <NavMain items={data.accounts} /> */}
+        <NavProjects projects={data.accounts} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

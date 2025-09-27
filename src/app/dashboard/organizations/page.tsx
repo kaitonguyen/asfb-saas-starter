@@ -13,7 +13,7 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 export default async function Page() {
   const supabase = await createSupabaseBrowserClient();
   const { data: organizations } = await supabase.from('organizations').select('*');
-  console.log('organizations', organizations);
+  
   return (
     <SidebarProvider>
       <AppSidebar />

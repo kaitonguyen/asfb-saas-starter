@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/components/ui/input'
 import { Label } from '@/components/components/ui/label'
 import { Button } from '@/components/components/ui/button'
+import { Eye, EyeOff } from 'lucide-react'
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('')
@@ -14,8 +15,9 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
-  const router = useRouter()
   const supabase = createSupabaseBrowserClient()
+
+  const [showPassword, setShowPassword] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -52,7 +54,15 @@ export default function SignUpPage() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Mật khẩu</Label>
-                <Input id="password" type="password" placeholder="Mật khẩu" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                <div className='flex items-center relative'>
+                  <Input id="password" type={showPassword ? "text" : "password"} placeholder="Mật khẩu" className='pr-10' required value={password} onChange={(e) => setPassword(e.target.value)} />
+                  {
+                    showPassword ?
+                      <Eye className='absolute right-3 h-4 w-4 text-muted-foreground' onClick={() => setShowPassword(true)} />
+                      :
+                      <EyeOff className='absolute right-3 h-4 w-4 text-muted-foreground' onClick={() => setShowPassword(false)} />
+                  }
+                </div>
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               {message && <p className="text-sm text-green-600">{message}</p>}

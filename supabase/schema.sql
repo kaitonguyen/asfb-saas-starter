@@ -1,3 +1,9 @@
+-- Base schema definition (reordered full DDL)
+-- This file intentionally excludes data seeding (see ./seeders/*.sql for seeds)
+-- Uses pgcrypto.gen_random_uuid() for UUID defaults.
+
+create extension if not exists pgcrypto;
+
 -- Organizations and memberships for multi-tenant
 create table public.organizations (
   id uuid primary key default gen_random_uuid(),
@@ -39,9 +45,13 @@ create policy orgs_insert on public.organizations
 create policy memberships_insert on public.memberships
   for insert to authenticated with check (user_id = auth.uid());
 
--- Helper function to create org and owner membership
+-- SECURITY DEFINER function with fixed search_path to avoid hijack via malicious schemas
 create or replace function public.create_org_with_owner(p_name text, p_slug text)
-returns json language plpgsql security definer as $$
+returns json
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
 declare
   v_org public.organizations;
 begin
@@ -56,58 +66,123 @@ end;
 $$;
 
 -- Subscriptions: org-level billing information
-create table public.subscriptions (
-  org_id uuid primary key references public.organizations(id) on delete cascade,
-  plan text not null default 'free',
-  status text not null default 'inactive', -- inactive | active | trialing | past_due | canceled
-  provider text default 'stripe', -- billing provider identifier (optional)
-  price_id text, -- provider price id
-  customer_id text, -- provider customer id
-  subscription_id text, -- provider subscription id
-  current_period_end timestamptz,
-  cancel_at_period_end boolean default false,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+-- Plans (canonical list of subscription plans)
+create table if not exists public.plans (
+  id uuid primary key default gen_random_uuid(),
+  code text not null unique,          -- 'free', 'pro'
+  name text not null,
+  description text,
+  amount_cents int not null default 0,
+  currency text not null default 'vnd',
+  billing_interval text not null default 'month', -- month/year
+  is_active boolean not null default true,
+  created_at timestamptz not null default now()
 );
+alter table public.plans enable row level security;
+create policy plans_select on public.plans for select using (true);
 
--- RLS for subscriptions
+-- (Plan seed data removed – see seeders/plans-seeder.sql)
+
+-- Subscriptions referencing plans (one row per active subscription)
+create table if not exists public.subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid not null references public.organizations(id) on delete cascade,
+  price_id uuid not null references public.plans(id),
+  status text not null default 'active', -- active | canceled | past_due | trialing
+  current_period_start timestamptz default now(),
+  current_period_end timestamptz,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
 alter table public.subscriptions enable row level security;
 
--- Anyone in the org can read subscription
+-- Policies: members can view, only owners can modify
 create policy subscriptions_select on public.subscriptions
+  for select using (
+    exists (
+      select 1 from public.memberships m
+      where m.org_id = subscriptions.org_id
+        and m.user_id = auth.uid()
+    )
+  );
+
+create policy subscriptions_modify on public.subscriptions
+  for all using (
+    exists (
+      select 1 from public.memberships m
+      where m.org_id = subscriptions.org_id
+        and m.user_id = auth.uid()
+        and m.role = 'owner'
+    )
+  ) with check (
+    exists (
+      select 1 from public.memberships m
+      where m.org_id = subscriptions.org_id
+        and m.user_id = auth.uid()
+        and m.role = 'owner'
+    )
+  );
+
+-- Invoices (historical billing records per org)
+create table if not exists public.invoices (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid not null references public.organizations(id) on delete cascade,
+  plan_code text not null references public.plans(code),
+  amount_cents int not null,
+  currency text not null default 'vnd',
+  status text not null default 'paid', -- paid | open | void | uncollectible | refunded
+  period_start timestamptz,
+  period_end timestamptz,
+  issued_at timestamptz not null default now(),
+  provider_invoice_id text,
+  metadata jsonb default '{}'::jsonb
+);
+alter table public.invoices enable row level security;
+create policy invoices_select on public.invoices
   for select using (
     exists(
       select 1 from public.memberships m
-      where m.org_id = subscriptions.org_id and m.user_id = auth.uid()
+      where m.org_id = invoices.org_id and m.user_id = auth.uid()
     )
   );
 
--- Only org owner can insert/update/delete subscription rows
-create policy subscriptions_insert on public.subscriptions
-  for insert to authenticated with check (
+-- Credit balances per org (e.g. promotional credits)
+create table if not exists public.credit_balances (
+  org_id uuid primary key references public.organizations(id) on delete cascade,
+  cents int not null default 0,
+  updated_at timestamptz not null default now()
+);
+alter table public.credit_balances enable row level security;
+create policy credit_balances_select on public.credit_balances
+  for select using (
     exists(
       select 1 from public.memberships m
-      where m.org_id = subscriptions.org_id and m.user_id = auth.uid() and m.role = 'owner'
+      where m.org_id = credit_balances.org_id and m.user_id = auth.uid()
     )
   );
-
-create policy subscriptions_update on public.subscriptions
-  for update to authenticated using (
+create policy credit_balances_modify on public.credit_balances
+  for all using (
     exists(
       select 1 from public.memberships m
-      where m.org_id = subscriptions.org_id and m.user_id = auth.uid() and m.role = 'owner'
+      where m.org_id = credit_balances.org_id and m.user_id = auth.uid() and m.role = 'owner'
     )
   ) with check (
     exists(
       select 1 from public.memberships m
-      where m.org_id = subscriptions.org_id and m.user_id = auth.uid() and m.role = 'owner'
+      where m.org_id = credit_balances.org_id and m.user_id = auth.uid() and m.role = 'owner'
     )
   );
 
-create policy subscriptions_delete on public.subscriptions
-  for delete to authenticated using (
-    exists(
-      select 1 from public.memberships m
-      where m.org_id = subscriptions.org_id and m.user_id = auth.uid() and m.role = 'owner'
-    )
-  );
+-- Optional helper: ensure a credit balance row exists when an org is created
+create or replace function public.ensure_credit_balance()
+returns trigger language plpgsql as $$
+begin
+  insert into public.credit_balances(org_id) values (new.id)
+  on conflict (org_id) do nothing;
+  return new;
+end;$$;
+drop trigger if exists organizations_credit_balance_init on public.organizations;
+create trigger organizations_credit_balance_init
+  after insert on public.organizations
+  for each row execute procedure public.ensure_credit_balance();
+

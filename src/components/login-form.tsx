@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/components/ui/input"
 import { Label } from "@/components/components/ui/label"
 import { createSupabaseBrowserClient } from "@/lib/supabase/client"
+import { Eye, EyeOff } from "lucide-react"
 
 export function LoginForm({
   className,
@@ -26,6 +27,7 @@ export function LoginForm({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -66,7 +68,14 @@ export function LoginForm({
                   <Label htmlFor="password">Mật khẩu</Label>
                   <a href="/auth/reset-password" className="ml-auto inline-block text-sm underline-offset-4 hover:underline" tabIndex={-1}>Quên mật khẩu?</a>
                 </div>
-                <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                <div className="relative flex items-center">
+                  <Input id="password" type={showPassword ? "text" : "password"} required className="pr-10" value={password} onChange={(e) => setPassword(e.target.value)} />
+                  {showPassword ? (
+                    <EyeOff className='absolute right-3 h-4 w-4 text-muted-foreground' onClick={() => setShowPassword(false)} />
+                  ) : (
+                    <Eye className='absolute right-3 h-4 w-4 text-muted-foreground' onClick={() => setShowPassword(true)} />
+                  )}
+                </div>
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               {message && <p className="text-sm text-green-600">{message}</p>}

@@ -1,55 +1,36 @@
-import Link from 'next/link'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/components/ui/tabs'
-import { ProfileForm } from '@/components/account/profile-form'
 import { getOrgConfig } from '@/lib/org-config'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/components/ui/card'
-import { SubscriptionSummary } from '@/components/account/subscription-summary'
+import BillingPage from './billing/page'
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/components/ui/sidebar'
+import { AppSidebar } from '@/components/components/app-sidebar'
+import { Separator } from '@/components/components/ui/separator'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from '@/components/components/ui/breadcrumb'
 
-export default function AccountPage() {
+export default function Page() {
   const org = getOrgConfig()
   return (
-    <main className="container py-10 space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Account</h1>
-        <p className="text-sm text-muted-foreground">Manage your profile, {org.labelPlural.toLowerCase()}, and subscription</p>
-      </div>
-      <Tabs defaultValue="profile" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="orgs">{org.labelPlural}</TabsTrigger>
-          <TabsTrigger value="billing">Subscription</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="profile">
-          <ProfileForm />
-        </TabsContent>
-
-        <TabsContent value="orgs">
-          <Card>
-            <CardHeader>
-              <CardTitle>{org.labelPlural}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">View and create {org.labelPlural.toLowerCase()}.</p>
-                <Link className="underline" href={org.route as any}>Go to {org.labelPlural.toLowerCase()}</Link>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="billing">
-          <Card>
-            <CardHeader>
-              <CardTitle>Subscription</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-3">Your organizations and their current plan/status.</p>
-              <SubscriptionSummary />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </main>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator
+              orientation="vertical"
+              className="mr-2 data-[orientation=vertical]:h-4"
+            />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Thanh toán</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        </header>
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          <BillingPage />
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }

@@ -12,10 +12,12 @@
 
 - [x] Create and Run Task
 
- - [x] Launch the Project
+- [x] Launch the Project
 
 - [x] Ensure Documentation is Complete
 
 Work through each checklist item systematically.
 Keep communication concise and focused.
 Follow development best practices.
+
+When you create schema, create new migration file, do not edit existing schema.sql file. Separate seeder data from schema to a different file. Always ensure add search_path to schema.sql.
