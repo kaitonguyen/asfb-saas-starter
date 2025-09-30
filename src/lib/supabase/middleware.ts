@@ -47,8 +47,8 @@ export async function updateSession(request: NextRequest) {
   // Helper to preserve Supabase cookies when redirecting
   const redirectWithCookies = (url: URL) => {
     const res = NextResponse.redirect(url)
-    supabaseResponse.cookies.getAll().forEach(({ name, value, options }) => {
-      res.cookies.set(name, value, options)
+    supabaseResponse.cookies.getAll().forEach(({ name, value }) => {
+      res.cookies.set(name, value)
     })
     return res
   }
@@ -62,8 +62,22 @@ export async function updateSession(request: NextRequest) {
 
   // If signed-in and hitting auth pages (except sign-out and callback), send to dashboard
   if (user && isAuthRoute && !isSignOut && !isAuthCallback) {
+    // Only check if not already on /dashboard/organizations
+    if (!pathname.startsWith('/dashboard/organizations')) {
+      // Query memberships for this user
+      const { data: memberships, error } = await supabase
+        .from('memberships')
+        .select('org_id')
+        .eq('user_id', user.id)
+        .limit(1)
+      if (!error && (!memberships || memberships.length === 0)) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/dashboard/organizations'
+        return redirectWithCookies(url)
+      }
+    }
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = '/dashboard/account/billing'
     return redirectWithCookies(url)
   }
 

@@ -172,7 +172,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
     fetchUser()
   }, [supabase])
-  console.log(user)
 
   if (!user) return null
   return (

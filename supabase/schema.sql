@@ -87,7 +87,7 @@ create policy plans_select on public.plans for select using (true);
 create table if not exists public.subscriptions (
   id uuid primary key default gen_random_uuid(),
   org_id uuid not null references public.organizations(id) on delete cascade,
-  price_id uuid not null references public.plans(id),
+  plan_id uuid not null references public.plans(id),
   status text not null default 'active', -- active | canceled | past_due | trialing
   current_period_start timestamptz default now(),
   current_period_end timestamptz,
@@ -175,7 +175,7 @@ create policy credit_balances_modify on public.credit_balances
 
 -- Optional helper: ensure a credit balance row exists when an org is created
 create or replace function public.ensure_credit_balance()
-returns trigger language plpgsql as $$
+returns trigger language plpgsql set search_path = public as $$
 begin
   insert into public.credit_balances(org_id) values (new.id)
   on conflict (org_id) do nothing;
@@ -186,3 +186,54 @@ create trigger organizations_credit_balance_init
   after insert on public.organizations
   for each row execute procedure public.ensure_credit_balance();
 
+
+-- Projects (workspaces under an organization)
+create table if not exists public.projects (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  name text not null,
+  description text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz default now()
+);
+alter table public.projects enable row level security;
+
+-- Policies: members of org can view, only owners can insert/update/delete
+create policy projects_select on public.projects
+  for select using (
+    exists (
+      select 1 from public.memberships m
+      where m.org_id = projects.organization_id
+        and m.user_id = auth.uid()
+    )
+  );
+
+create policy projects_insert on public.projects
+  for insert with check (
+    exists (
+      select 1 from public.memberships m
+      where m.org_id = projects.organization_id
+        and m.user_id = auth.uid()
+        and m.role = 'owner'
+    )
+  );
+
+create policy projects_update on public.projects
+  for update using (
+    exists (
+      select 1 from public.memberships m
+      where m.org_id = projects.organization_id
+        and m.user_id = auth.uid()
+        and m.role = 'owner'
+    )
+  );
+
+create policy projects_delete on public.projects
+  for delete using (
+    exists (
+      select 1 from public.memberships m
+      where m.org_id = projects.organization_id
+        and m.user_id = auth.uid()
+        and m.role = 'owner'
+    )
+  );

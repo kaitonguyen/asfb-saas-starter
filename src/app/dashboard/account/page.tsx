@@ -1,5 +1,4 @@
 import { getOrgConfig } from '@/lib/org-config'
-import BillingPage from './billing/page'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/components/ui/sidebar'
 import { AppSidebar } from '@/components/components/app-sidebar'
 import { Separator } from '@/components/components/ui/separator'
@@ -28,7 +27,7 @@ export default function Page() {
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <BillingPage />
+          
         </div>
       </SidebarInset>
     </SidebarProvider>
