@@ -37,7 +37,7 @@ export function OrgCard({ membership }: { membership: any }) {
         <div className="overflow-hidden rounded-lg text-card-foreground shadow-sm grow bg-surface-100 p-3 transition-colors hover:bg-surface-200 border border-light hover:border-default cursor-pointer flex items-center min-h-[70px] [&_>div]:w-full [&_>div]:items-center">
           <div className="relative flex items-start gap-3">
             <div className="rounded-full bg border w-8 h-8 flex items-center justify-center flex-shrink-0">
-              <Icons.brush className="text-foreground" size={18} />
+              <Icons.lampDesk className="text-foreground" size={18} />
             </div>
             <div className="flex-grow flex flex-col gap-0 min-w-0">
               <h3 title={orgName} className="text-sm text-foreground mb-0 truncate max-w-full">{orgName}</h3>

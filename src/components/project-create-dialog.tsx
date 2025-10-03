@@ -5,6 +5,14 @@ import { Input } from '@/components/components/ui/input'
 import { Button } from '@/components/components/ui/button'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 
+const getPlanName = (plan: string) => {
+  if (plan === 'trial') return 'Dùng thử'
+  if (plan === 'free') return 'Cơ bản'
+  if (plan === 'pro') return 'Chuyên nghiệp'
+  if (plan === 'pre') return 'Cao cấp'
+  return plan
+}
+
 export function ProjectCreateDialog({ orgId, currentCount, maxProjects, plan }: { orgId: string, currentCount: number, maxProjects: number, plan: string }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -53,7 +61,7 @@ export function ProjectCreateDialog({ orgId, currentCount, maxProjects, plan }: 
           <div className="flex justify-end gap-2">
             <Button type="submit" disabled={loading || !name}>{loading ? 'Đang tạo...' : 'Tạo'}</Button>
           </div>
-          {!canCreate && <div className="text-xs text-yellow-600 mt-2">Bạn đã đạt giới hạn số dự án cho gói <b>{plan}</b>.</div>}
+          {!canCreate && <div className="text-xs text-yellow-600 mt-2">Bạn đã đạt giới hạn số dự án cho gói <b>{getPlanName(plan)}</b>.</div>}
         </form>
       </DialogContent>
     </Dialog>

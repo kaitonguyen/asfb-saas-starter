@@ -29,23 +29,6 @@ import { createClient } from "@/lib/supabase/component"
 
 // This is sample data.
 const data = {
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
       title: "Playground",
@@ -153,7 +136,7 @@ const data = {
   accounts: [
     {
       name: "Thanh toán",
-      url: "#",
+      url: "/dashboard/account/billing",
       icon: CreditCard,
     },
   ]
@@ -177,7 +160,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <div className="flex items-center gap-2">
+          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+          </div>
+          <div className="grid flex-1 text-left text-sm leading-tight">
+            <span className="truncate font-semibold">
+              Skripter
+            </span>
+          </div>
+        </div>
       </SidebarHeader>
       <SidebarContent>
         {/* <NavMain items={data.accounts} /> */}

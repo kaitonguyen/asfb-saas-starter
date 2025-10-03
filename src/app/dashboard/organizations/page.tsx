@@ -1,5 +1,3 @@
-
-import { AppSidebar } from '@/components/components/organization-sidebar'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,6 +9,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/comp
 import { OrgCreateDialog } from '@/components/org-create-dialog'
 import { OrgCard } from '@/components/org-card'
 import { createClient } from '@/lib/supabase/server'
+import { AppSidebar } from '@/components/components/app-sidebar'
 
 export default async function Page() {
   const supabase = await createClient();
@@ -32,7 +31,7 @@ export default async function Page() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/organizations">
+                  <BreadcrumbLink href="/dashboard/organizations">
                     Thư phòng
                   </BreadcrumbLink>
                 </BreadcrumbItem>
@@ -49,7 +48,7 @@ export default async function Page() {
                     <div className="space-y-4">
                       <div className="flex items-center gap-4">
                         <div className="space-y-1">
-                          <h1 className="">Thư phòng của bạn</h1>
+                          <h1 className="text-2xl font-bold">Thư phòng của bạn</h1>
                         </div>
                       </div>
                     </div>

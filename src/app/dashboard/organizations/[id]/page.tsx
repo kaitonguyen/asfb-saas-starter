@@ -5,6 +5,7 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
+  BreadcrumbSeparator,
 } from '@/components/components/ui/breadcrumb'
 import { Separator } from '@/components/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/components/ui/sidebar'
@@ -51,9 +52,13 @@ export default async function Page() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/organizations">
+                  <BreadcrumbLink href="/dashboard/organizations">
                     Thư phòng
                   </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem className="hidden md:block">
+                  {memberships?.[0]?.organizations?.name || ''}
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -68,7 +73,7 @@ export default async function Page() {
                     <div className="space-y-4">
                       <div className="flex items-center gap-4">
                         <div className="space-y-1">
-                          <h1 className="">Thư phòng của bạn: <span className='text-xl font-bold'>{memberships?.[0]?.organizations?.name}</span></h1>
+                          <h1 className="text-2xl font-bold">Dự án</h1>
                         </div>
                       </div>
                     </div>
@@ -86,14 +91,16 @@ export default async function Page() {
               {orgId && (
                 <div className="mx-auto w-full max-w-[1200px] px-4 @lg:px-6 @xl:px-10 mt-6">
                   <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-lg font-semibold">Dự án</h2>
+                    <span></span>
                     <ProjectCreateDialog orgId={orgId} currentCount={orgProjects.length} maxProjects={maxProjects} plan={plan} />
                   </div>
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {orgProjects.length > 0 ? orgProjects.map((project: any) => (
                       <div key={project.id} className="rounded border p-4 bg-white shadow-sm">
-                        <div className="font-medium text-base">{project.name}</div>
-                        <div className="text-xs text-gray-500">ID: {project.id}</div>
+                        <a href={`/dashboard/project/${project.id}`}>
+                          <div className="font-medium text-base">{project.name}</div>
+                          <div className="text-xs text-gray-500">ID: {project.id}</div>
+                        </a>
                       </div>
                     )) : (
                       <div className="text-sm text-foreground-light col-span-3 text-center">Chưa có dự án nào.</div>
