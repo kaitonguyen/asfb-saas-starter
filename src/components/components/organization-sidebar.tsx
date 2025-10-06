@@ -6,15 +6,19 @@ import {
   BookOpen,
   Bot,
   Command,
+  CreditCard,
+  DoorOpen,
+  Files,
   Frame,
   GalleryVerticalEnd,
+  LayoutDashboard,
+  LucideBlocks,
   Map,
   PieChart,
   Settings2,
   SquareTerminal,
 } from "lucide-react"
 
-import { NavMain } from "@/components/components/nav-main"
 import { NavProjects } from "@/components/components/nav-projects"
 import { NavUser } from "@/components/components/nav-user"
 import { TeamSwitcher } from "@/components/components/team-switcher"
@@ -25,149 +29,69 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/components/ui/sidebar"
-
-// This is sample data.
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "",
-  },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
-  navMain: [
-    {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
-}
+import { createClient } from "@/lib/supabase/component"
+import { NavAccounts } from "./nav-account"
+import { useParams } from "next/navigation"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const supabase = createClient()
+  const [user, setUser] = React.useState<any>(null)
+  const params = useParams();
+  const projectId = params?.id;
+
+  const data = {
+    project: [
+      {
+        name: "Tổng quan",
+        url: "/dashboard/project/" + projectId,
+        icon: LucideBlocks,
+      },
+    ],
+    accounts: [
+      {
+        name: "Thư phòng",
+        url: "/dashboard/organizations",
+        icon: DoorOpen,
+      },
+      {
+        name: "Thanh toán",
+        url: "/dashboard/account/billing",
+        icon: CreditCard,
+      },
+    ]
+  }
+
+  React.useEffect(() => {
+    async function fetchUser() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      setUser(user)
+    }
+    fetchUser()
+  }, [supabase])
+
+  if (!user) return null
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <div className="flex items-center gap-2">
+          <div className="flex aspect-square size-8 items-center justify-center rounded-lg ">
+            <img src="/logo_color.png" alt="Skripter" className="h-5 w-5" />
+          </div>
+          <div className="grid flex-1 text-left text-sm leading-tight">
+            <span className="truncate font-semibold">
+              Skripter
+            </span>
+          </div>
+        </div>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavProjects projectId={projectId} />
+        <NavAccounts accounts={data.accounts} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

@@ -193,6 +193,7 @@ create table if not exists public.projects (
   organization_id uuid not null references public.organizations(id) on delete cascade,
   name text not null,
   description text,
+  order_number int default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz default now()
 );

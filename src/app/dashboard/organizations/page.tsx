@@ -3,6 +3,7 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
+  BreadcrumbSeparator,
 } from '@/components/components/ui/breadcrumb'
 import { Separator } from '@/components/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/components/ui/sidebar'
@@ -15,7 +16,7 @@ export default async function Page() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
-  const { data: memberships } = await supabase.from('memberships').select(`*, organizations (id, name, slug)`).eq('user_id', user.id).eq('role', 'owner');
+  const { data: memberships } = await supabase.from('memberships').select(`*, organizations (id, name, slug, projects (id, name, description))`).eq('user_id', user.id).eq('role', 'owner');
 
   return (
     <SidebarProvider>
@@ -34,6 +35,10 @@ export default async function Page() {
                   <BreadcrumbLink href="/dashboard/organizations">
                     Thư phòng
                   </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem className="hidden md:block">
+                  {memberships?.[0]?.organizations?.name || ''}
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>

@@ -29,10 +29,14 @@ export default async function Page() {
 
   // Get project info
   const { data: project, error: projectError } = await supabase.from('projects').select('id, name, description, organization_id, created_at, updated_at').eq('id', id).single();
+  console.log(project, projectError)
   if (!project || projectError) return notFound();
 
   // Get org info
   const { data: org } = await supabase.from('organizations').select('id, name, slug').eq('id', project.organization_id).single();
+
+  // Get memberships and subscription for sidebar/context
+  const { data: subscription } = await supabase.from('subscriptions').select('plan').eq('user_id', user.id).eq('status', 'active').single();
 
   // Mock data for dashboard
   const stats = {
@@ -80,27 +84,6 @@ export default async function Page() {
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4">
           <div className="grid auto-rows-min gap-4 md:grid-cols-4">
-            {/* Dashboard cards */}
-            <Card className="p-6 flex flex-col items-center justify-center">
-              <div className="text-2xl font-bold text-brand-600">{stats.chapters}</div>
-              <div className="text-sm text-gray-500 mt-2">Chương đã viết</div>
-            </Card>
-            <Card className="p-6 flex flex-col items-center justify-center">
-              <div className="text-2xl font-bold text-brand-600">{stats.scenes}</div>
-              <div className="text-sm text-gray-500 mt-2">Cảnh đã viết</div>
-            </Card>
-            <Card className="p-6 flex flex-col items-center justify-center">
-              <div className="text-2xl font-bold text-brand-600">{stats.sections}</div>
-              <div className="text-sm text-gray-500 mt-2">Đoạn đã viết</div>
-            </Card>
-            <Card className="p-6 flex flex-col items-center justify-center">
-              <div className="text-2xl font-bold text-brand-600">{stats.words.toLocaleString()}</div>
-              <div className="text-sm text-gray-500 mt-2">Số từ đã viết</div>
-            </Card>
-            {/* Calendar for daily word count */}
-            <div className="w-full col-span-4">
-              <WordCountChart />
-            </div>
           </div>
         </div>
       </SidebarInset>

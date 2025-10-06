@@ -1,5 +1,4 @@
 
-import { AppSidebar } from '@/components/components/organization-sidebar'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,10 +9,10 @@ import {
 import { Separator } from '@/components/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/components/ui/sidebar'
 import { OrgCreateDialog } from '@/components/org-create-dialog'
-import { OrgCard } from '@/components/org-card'
 import { ProjectCreateDialog } from '@/components/project-create-dialog'
 import { createClient } from '@/lib/supabase/server'
 import { Project } from '@/lib/constants/project'
+import { AppSidebar } from '@/components/components/app-sidebar'
 
 export default async function Page() {
   const supabase = await createClient();

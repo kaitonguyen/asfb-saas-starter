@@ -43,7 +43,7 @@ export function OrgCard({ membership }: { membership: any }) {
               <h3 title={orgName} className="text-sm text-foreground mb-0 truncate max-w-full">{orgName}</h3>
               <div className="flex items-center justify-between text-xs text-foreground-light font-sans">
                 <div className="flex items-center gap-x-1.5">
-                  <span>{membership.organizations.length || 0} dự án</span>
+                  <span>{membership.organizations.projects.length || 0} dự án</span>
                 </div>
               </div>
             </div>
